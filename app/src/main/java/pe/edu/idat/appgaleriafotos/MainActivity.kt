@@ -9,6 +9,7 @@ import android.os.Bundle
 import android.os.Environment
 import android.provider.MediaStore
 import android.view.View
+import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.content.FileProvider
 import pe.edu.idat.appgaleriafotos.databinding.ActivityMainBinding
@@ -33,6 +34,24 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
     }
     private fun compartirFoto() {
         /*Volley;OkHttp;Retrofit*/
+        if(rutaFotoActual != ""){
+            val contenidoUri = obtenerContenidoUri(File(rutaFotoActual))
+            val intentImagen = Intent().apply {
+                action = Intent.ACTION_SEND
+                putExtra(Intent.EXTRA_STREAM, contenidoUri)
+                addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                type = "image/jpeg"
+            }
+            val chooser = Intent.createChooser(intentImagen,
+                "Compartir Foto")
+            if(intentImagen.resolveActivity(packageManager) != null){
+                startActivity(chooser)
+            }
+        }else{
+            Toast.makeText(applicationContext,
+                "Debe seleccionar una imagen para compartirlo",
+                Toast.LENGTH_LONG).show()
+        }
     }
     private fun tomarFoto() {
         //abrirCamara.launch(Intent(MediaStore.ACTION_IMAGE_CAPTURE))
@@ -69,5 +88,9 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
             ".jpg",
             directorio)
         rutaFotoActual = archivo.absolutePath
+    }
+    fun obtenerContenidoUri(archivoFoto: File): Uri{
+        return FileProvider.getUriForFile(applicationContext,
+            "pe.edu.idat.appgaleriafotos.fileprovider", archivoFoto)
     }
 }
